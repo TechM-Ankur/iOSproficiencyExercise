@@ -20,6 +20,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    
     self.window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
     ImagesListViewController *objImahgesList = [[ImagesListViewController alloc]init];
     UINavigationController *navigationController=[[UINavigationController alloc] initWithRootViewController:objImahgesList];

@@ -10,13 +10,18 @@
 
 @interface ImagesListViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,NSURLSessionDelegate>
 {
-    UIView *viewNavBar;
-    UILabel *lblNavTitle;
-    UITableView *tableViewImages;
-    NSMutableArray *arrImagesDeatils;
-    UIView *viewForAlertView;
+    
+    
+    
 }
 
 @property (nonatomic) UIActivityIndicatorView *viewIndicator;
+
+
+
+@property (nonatomic, retain) UIView *viewNavBar;
+@property (nonatomic, retain) UILabel *lblNavTitle;
+@property (nonatomic, retain) UITableView *tableViewImages;
+
 
 @end

@@ -8,10 +8,13 @@
 
 #import "ImagesListViewController.h"
 #import "NSObject+SBJson.h"
-#import "WriteImage.h"
 #import "Reachability.h"
-#import "Gzip.h"
+#import "ImageDetails.h"
+#import "CommonFunc.h"
+#import "WriteImage.h"
 
+#import "GZIP.h"
+#import "APICall.h"
 
 float screenWidth = 320;
 float screenHeight = 568;
@@ -19,12 +22,28 @@ float screenHeight = 568;
 #define PADDING_BET_CELL 5
 
 @interface ImagesListViewController ()
-
+{
+    ImageDetails *objImageDetails;
+}
 @end
 
 @implementation ImagesListViewController
 
 #pragma mark - view did load
+
+@synthesize viewNavBar,lblNavTitle,tableViewImages;
+
+
+
+- (void)viewDidUnload
+{
+    objImageDetails = nil;
+    self.viewNavBar = nil;
+    self.lblNavTitle = nil;
+    self.tableViewImages = nil;
+    
+    [super viewDidUnload];
+}
 
 - (void)viewDidLoad
 {
@@ -33,14 +52,19 @@ float screenHeight = 568;
     
     [self.view setBackgroundColor:[UIColor whiteColor]];
     
-    // this methid make design
+    // this method make design
     
     [self initialObjects];
-    //[self checkInternetConnection:@"https://www.google.co.in"];
+    // check internet connection
+    [self checkInternetConnection:@"https://www.google.co.in"];
+    
 }
+
+
 
 -(void)viewWillAppear:(BOOL)animated
 {
+    [super viewWillAppear:TRUE];
     self.navigationController.navigationBarHidden = TRUE;
 }
 
@@ -53,7 +77,7 @@ float screenHeight = 568;
 
 -(void)initialObjects
 {
-    
+    // this is universal application. i do not need to use AutoLayout in this application becuase UI expand accoording to screen size. Thanks
     // Create viewIndicator view
     
     self.viewIndicator = [[UIActivityIndicatorView alloc]initWithFrame:CGRectMake(0,0,self.view.frame.size.width,self.view.frame.size.height)];
@@ -64,53 +88,54 @@ float screenHeight = 568;
     
     // Create navigation bar
     
-    viewNavBar = [[UIView alloc]init];
-    viewNavBar.frame = CGRectMake(0, 0, self.view.frame.size.width*(320/screenWidth), self.view.frame.size.height*(64/screenHeight));
-    [viewNavBar setBackgroundColor:[UIColor colorWithRed:200.0/255.0 green:200.0/255.0 blue:200.0/255.0 alpha:1.0]];
-    [self.view addSubview:viewNavBar];
+    self.viewNavBar = [[UIView alloc]init];
+    self.viewNavBar.frame = CGRectMake(0, 0, self.view.frame.size.width*(320/screenWidth), self.view.frame.size.height*(64/screenHeight));
+    [self.viewNavBar setBackgroundColor:[UIColor colorWithRed:121.0/255.0 green:121.0/255.0 blue:121.0/255.0 alpha:1.0]];
+    [self.view addSubview:self.viewNavBar];
     
     // Create navigation bar
     
     CGSize sizeCalLblNavTitle = CGSizeMake(self.view.frame.size.width*(150/screenWidth), self.view.frame.size.height*(44/screenHeight));
-    lblNavTitle = [[UILabel alloc]initWithFrame:CGRectMake((viewNavBar.frame.size.width-sizeCalLblNavTitle.width)/2, (viewNavBar.frame.size.height-sizeCalLblNavTitle.height)/2, sizeCalLblNavTitle.width, sizeCalLblNavTitle.height)];
-    lblNavTitle.numberOfLines = 0;
-    [lblNavTitle setFont:[UIFont fontWithName:@"AppleSDGothicNeo-Light" size:FONT_SIZE_TEXT_IPHONE]];
-    //lblNavTitle.text = @"Nav Title";
-    lblNavTitle.textAlignment  = NSTextAlignmentCenter;
-    lblNavTitle.textColor = [UIColor darkGrayColor];
-    [viewNavBar addSubview:lblNavTitle];
-    [lblNavTitle setBackgroundColor:[UIColor clearColor]];
+    self.lblNavTitle = [[UILabel alloc]initWithFrame:CGRectMake((self.viewNavBar.frame.size.width-sizeCalLblNavTitle.width)/2, (self.viewNavBar.frame.size.height-sizeCalLblNavTitle.height)/2, sizeCalLblNavTitle.width, sizeCalLblNavTitle.height)];
+    self.lblNavTitle.numberOfLines = 0;
+    [self.lblNavTitle setFont:[UIFont fontWithName:@"AppleSDGothicNeo-Light" size:FONT_SIZE_TEXT_IPHONE]];
+    //self.lblNavTitle.text = @"Nav Title";
+    self.lblNavTitle.textAlignment  = NSTextAlignmentCenter;
+    self.lblNavTitle.textColor = [UIColor whiteColor];
+    [self.viewNavBar addSubview:self.lblNavTitle];
+    [self.lblNavTitle setBackgroundColor:[UIColor clearColor]];
     
     // Create refresh button
     
     UIButton *btnRefersh = [UIButton buttonWithType:UIButtonTypeCustom];
     CGSize sizeCalBtnRefresh = CGSizeMake(self.view.frame.size.width*(30/screenWidth), self.view.frame.size.height*(30/screenHeight));
-    btnRefersh.frame = CGRectMake(viewNavBar.frame.size.width-sizeCalBtnRefresh.width-20, (viewNavBar.frame.size.height-sizeCalBtnRefresh.height)/2, sizeCalBtnRefresh.width, sizeCalBtnRefresh.height);
+    btnRefersh.frame = CGRectMake(self.viewNavBar.frame.size.width-sizeCalBtnRefresh.width-20, (self.viewNavBar.frame.size.height-sizeCalBtnRefresh.height)/2, sizeCalBtnRefresh.width, sizeCalBtnRefresh.height);
     btnRefersh.titleLabel.font = [UIFont fontWithName:@"AppleSDGothicNeo-Light" size:FONT_SIZE_TEXT_IPHONE];
     [btnRefersh setTitle:@"Ref" forState:UIControlStateNormal];
     [btnRefersh setTitle:@"Ref" forState:UIControlStateHighlighted];
     [btnRefersh addTarget:self action:@selector(btnRefershClick:) forControlEvents:UIControlEventTouchUpInside];
-    [viewNavBar addSubview:btnRefersh];
+    [btnRefersh setBackgroundColor:[UIColor clearColor]];
+    [self.viewNavBar addSubview:btnRefersh];
     
     
     NSLog(@"view : %f %f %f %f",self.view.frame.origin.x,self.view.frame.origin.y,self.view.frame.size.width,self.view.frame.size.height);
-    NSLog(@"viewNavBar : %f %f %f %f %f %f",viewNavBar.frame.origin.x,viewNavBar.frame.origin.y,viewNavBar.frame.size.width,viewNavBar.frame.size.height,(320/screenWidth),(64/screenHeight));
+    NSLog(@"self.viewNavBar : %f %f %f %f %f %f",self.viewNavBar.frame.origin.x,self.viewNavBar.frame.origin.y,self.viewNavBar.frame.size.width,self.viewNavBar.frame.size.height,(320/screenWidth),(64/screenHeight));
     
     // Create tableView for Images
     
-    tableViewImages = [[UITableView alloc]init];
-    tableViewImages.frame = CGRectMake(0, viewNavBar.frame.origin.y + viewNavBar.frame.size.height, self.view.frame.size.width*(320/screenWidth), self.view.frame.size.height*(504/screenHeight));
-    tableViewImages.tag = 1;
-    tableViewImages.delegate = self;
-    tableViewImages.dataSource = self;
-    tableViewImages.separatorStyle = UITableViewCellSeparatorStyleNone;
-    [self.view addSubview:tableViewImages];
+    self.tableViewImages = [[UITableView alloc]init];
+    self.tableViewImages.frame = CGRectMake(0, self.viewNavBar.frame.origin.y + self.viewNavBar.frame.size.height, self.view.frame.size.width*(320/screenWidth), self.view.frame.size.height*(504/screenHeight));
+    self.tableViewImages.tag = 1;
+    self.tableViewImages.delegate = self;
+    self.tableViewImages.dataSource = self;
+    self.tableViewImages.separatorStyle = UITableViewCellSeparatorStyleNone;
+    [self.view addSubview:self.tableViewImages];
     
     
     // Call API to get Data
     [self startLoader];
     [self getImageDetails];
-    
+        
 }
 
 #pragma mark - check user internet resources
@@ -161,14 +186,14 @@ float screenHeight = 568;
 {
     
     [self getImageDetails];
-    NSLog(@"arrImagesDeatils  %@",arrImagesDeatils);
 }
+
 
 #pragma mark - get image deatils from server callinga api
 
 -(void)getImageDetails
 {
-    
+    /*
      NSURLSessionConfiguration *configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
      NSURLSession *session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
      NSURL *url = [NSURL URLWithString:@"https://dl.dropboxusercontent.com/u/746330/facts.json"];
@@ -178,52 +203,44 @@ float screenHeight = 568;
      [request setHTTPMethod:@"GET"];
      
      NSURLSessionDataTask *postDataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
-         
-         // unGzip Data
-         
-         /*
-         NSString *strResponse = [[NSString alloc] initWithData:[Gzip gzipData:data] encoding:NSUTF8StringEncoding];
-         NSLog(@"response dict : %@",strResponse);
-         NSDictionary *dictResponse = [strResponse JSONValue];
-         NSLog(@"dict : %@",dictResponse);
-         */
-         
-         
-         NSUInteger capacity = data.length * 2;
-         NSMutableString *sbuf = [NSMutableString stringWithCapacity:capacity];
-         const unsigned char *buf = data.bytes;
-         NSInteger i;
-         for (i=0; i<data.length; ++i) {
-             [sbuf appendFormat:@"%02X", (NSUInteger)buf[i]];
-         }
-         
-         NSString * str = sbuf;
-         NSMutableString * strTemp = [[NSMutableString alloc] init];
-         int z = 0;
-         while (z < [str length])
-         {
-             NSString * hexChar = [str substringWithRange: NSMakeRange(z, 2)];
-             int value = 0;
-             sscanf([hexChar cStringUsingEncoding:NSASCIIStringEncoding], "%x", &value);
-             [strTemp appendFormat:@"%c", (char)value];
-             z+=2;
-         }
-         
-         NSDictionary *dictResponse = [strTemp JSONValue];
-         NSLog(@"dictResponse : %@",dictResponse);
-         if(dictResponse != nil)
-         {
-             [self getImageDetailsDict:dictResponse];
-             return ;
-         }
-         
-         [self alertViewInternetConnection];
+     
+     // unGzip Data
+     
+     NSUInteger capacity = data.length * 2;
+     NSMutableString *sbuf = [NSMutableString stringWithCapacity:capacity];
+     const unsigned char *buf = data.bytes;
+     NSInteger i;
+     for (i=0; i<data.length; ++i) {
+     [sbuf appendFormat:@"%02X", (NSUInteger)buf[i]];
+     }
+     
+     NSString * str = sbuf;
+     NSMutableString * strTemp = [[NSMutableString alloc] init];
+     int z = 0;
+     while (z < [str length])
+     {
+     NSString * hexChar = [str substringWithRange: NSMakeRange(z, 2)];
+     int value = 0;
+     sscanf([hexChar cStringUsingEncoding:NSASCIIStringEncoding], "%x", &value);
+     [strTemp appendFormat:@"%c", (char)value];
+     z+=2;
+     }
+     
+     NSDictionary *dictResponse = [strTemp JSONValue];
+     NSLog(@"dictResponse : %@",dictResponse);
+     if(dictResponse != nil)
+     {
+     [self getImageDetailsDict:dictResponse];
+     return ;
+     }
+     
+     [self alertViewInternetConnection];
      }];
      
      [postDataTask resume];
-     
+     */
     
-    /*
+    
     [self setSharedCacheForImages];
     
     NSURLSession *session = [self prepareSessionForRequest];
@@ -234,13 +251,16 @@ float screenHeight = 568;
     NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         if (!error) {
             
+            // i think this Data is not in Gzip Format
+            
+            NSLog(@"isGzippedData : %d",[data isGzippedData]);
             
             NSUInteger capacity = data.length * 2;
             NSMutableString *sbuf = [NSMutableString stringWithCapacity:capacity];
             const unsigned char *buf = data.bytes;
             NSInteger i;
             for (i=0; i<data.length; ++i) {
-                [sbuf appendFormat:@"%02X", (NSUInteger)buf[i]];
+                [sbuf appendFormat:@"%02lX", (unsigned long)buf[i]];
             }
             
             NSString * str = sbuf;
@@ -255,20 +275,35 @@ float screenHeight = 568;
                 z+=2;
             }
             
-            NSDictionary *dict = [strTemp JSONValue];
-            NSLog(@"dict : %@",dict);
-            if(dict != nil)
+            NSDictionary *dictResponse = [strTemp JSONValue];
+            NSLog(@"dictResponse : %@",dictResponse);
+            if(dictResponse != nil)
             {
-                [self getImageDetailsDict:dict];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    
+                    [self startLoader];
+                    [self getImageDetailsDict:dictResponse];
+                    
+                });
+                
                 return ;
             }
             
+            // response is not in proper format then show Message
+            
             [self alertViewInternetConnection];
-            [self stopLoader];
+            
+        }
+        else
+        {
+            // error message from API api
+            
+            NSLog(@"Error: %@", error.localizedDescription);
+            [self alertViewInternetConnection:@"Error" message:error.localizedDescription cancelBtnTitle:@"Ok"];
         }
     }];
     [dataTask resume];
-    */
+    
 }
 
 - (void)setSharedCacheForImages
@@ -290,8 +325,6 @@ float screenHeight = 568;
 
 -(void)getImageDetailsDict:(NSDictionary *)dict
 {
-    NSMutableDictionary *dictRows= [[NSMutableDictionary alloc]init];
-    dictRows = [dict objectForKey:@"rows"];
     NSString *str = [dict objectForKey:@"error"];
     
     if(str.length > 0)
@@ -302,24 +335,24 @@ float screenHeight = 568;
     
     NSLog(@"title : %@",[dict objectForKey:@"title"]);
     
+    objImageDetails = [ImageDetails new];
+    objImageDetails.arrImagesDeatils = [[NSMutableArray alloc]init];
+    objImageDetails.arrImagesDeatils = [dict objectForKey:@"rows"];
     
-    arrImagesDeatils = [[NSMutableArray alloc]init];
-    arrImagesDeatils = [dict objectForKey:@"rows"];
-    
-    for(int i=0;i<arrImagesDeatils.count;i++)
+    for(int i=0;i<objImageDetails.arrImagesDeatils.count;i++)
     {
-        NSMutableDictionary *tempDict =[[NSMutableDictionary alloc]init];
-        tempDict = [arrImagesDeatils objectAtIndex:i];
+        NSMutableDictionary *tempDict =[objImageDetails.arrImagesDeatils objectAtIndex:i];
         [tempDict setObject:@"320,320" forKey:@"imgSize"];
-        [arrImagesDeatils replaceObjectAtIndex:i withObject:tempDict];
+        [objImageDetails.arrImagesDeatils replaceObjectAtIndex:i withObject:tempDict];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        lblNavTitle.text = [dict objectForKey:@"title"];
+        
         //Wants to update UI or perform any task on main thread.
-        NSLog(@"arrImagesDeatils : %@",arrImagesDeatils);
-        [tableViewImages reloadData];
+        self.lblNavTitle.text = [dict objectForKey:@"title"];
+        NSLog(@"objImageDetails.arrImagesDeatils : %@",objImageDetails.arrImagesDeatils);
+        [self.tableViewImages reloadData];
         [self stopLoader];
     });
     
@@ -332,7 +365,7 @@ float screenHeight = 568;
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    if (tableViewImages.tag == 1 )
+    if (self.tableViewImages.tag == 1 )
     {
         return 1;
     }
@@ -343,9 +376,9 @@ float screenHeight = 568;
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     
-    if(tableViewImages.tag == 1)
+    if(self.tableViewImages.tag == 1)
     {
-        return arrImagesDeatils.count;
+        return objImageDetails.arrImagesDeatils.count;
     }
     
     return 0;
@@ -359,8 +392,7 @@ float screenHeight = 568;
     {
         if(tableView.tag == 1 )
         {
-            NSMutableDictionary *tempDict = [[NSMutableDictionary alloc]init];
-            tempDict = [arrImagesDeatils objectAtIndex:indexPath.row];
+            NSMutableDictionary *tempDict = [objImageDetails.arrImagesDeatils objectAtIndex:indexPath.row];
             CGRect sizeLblContain = [self getImageDescContentHeight:[self makeImgDescriptionWithTile:[tempDict objectForKey:@"title"] stringImgDesc:[tempDict objectForKey:@"description"]]];
             
             if(![[tempDict objectForKey:@"imageHref"] isEqual:[NSNull null]])
@@ -376,34 +408,37 @@ float screenHeight = 568;
     
 }
 
--(NSString *)makeImgDescriptionWithTile:(NSString *)strImgTitle stringImgDesc:(NSString *)strImgDesc
+-(NSMutableAttributedString *)makeImgDescriptionWithTile:(NSString *)strImgTitle stringImgDesc:(NSString *)strImgDesc
 {
     
-    
-    NSString *strContent = @"";
+    NSMutableAttributedString *strContent = nil;
     if(![strImgTitle isEqual:[NSNull null]])
     {
-        strContent = strImgTitle;
+        strContent = [CommonFunc colorWordString:[NSString stringWithFormat:@"%@",strImgTitle] firstText:strImgTitle secondText:@""];
     }
     
     if(![strImgDesc isEqual:[NSNull null]])
     {
-        if(![strContent isEqual:[NSNull null]])
+        strContent = [CommonFunc colorWordString:[NSString stringWithFormat:@"%@",strImgDesc] firstText:strImgDesc secondText:@""];
+        
+        if(![strImgTitle isEqual:[NSNull null]])
         {
-            strContent = [NSString stringWithFormat:@"%@ : ",strContent];
+            strContent = [CommonFunc colorWordString:[NSString stringWithFormat:@"%@ : %@",strImgTitle,strImgDesc] firstText:strImgTitle secondText:strImgDesc];
         }
-        strContent = [NSString stringWithFormat:@"%@%@",strContent,strImgDesc];
+        
     }
     
     return strContent;
 }
 
--(CGRect)getImageDescContentHeight:(NSString *)strImgContent
+-(CGRect)getImageDescContentHeight:(NSMutableAttributedString *)strImgContent
 {
-    CGSize constraint;
-    constraint = CGSizeMake(tableViewImages.frame.size.width, 20000.0f);
+    // calculate dynamic size of label
     
-    CGRect sizeLblContain = [strImgContent boundingRectWithSize:constraint options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont fontWithName:@"AppleSDGothicNeo-Light" size:FONT_SIZE_TEXT_IPHONE]}context:nil];
+    CGSize constraint;
+    constraint = CGSizeMake(self.tableViewImages.frame.size.width, 20000.0f);
+    
+    CGRect sizeLblContain = [strImgContent.string boundingRectWithSize:constraint options:NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:[UIFont fontWithName:@"AppleSDGothicNeo-Light" size:FONT_SIZE_TEXT_IPHONE]}context:nil];
     return sizeLblContain;
 }
 
@@ -412,7 +447,7 @@ float screenHeight = 568;
     
     static NSString *CellIdentifier = @"Cell";
     
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    UITableViewCell *cell;
     cell = nil;
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:CellIdentifier];
@@ -424,33 +459,37 @@ float screenHeight = 568;
         if(tableView.tag == 1)
         {
             
-            NSMutableDictionary *tempDict = [[NSMutableDictionary alloc] init];
-            //NSLog(@"arrActivites : %@ count %lu",arrActivites,(unsigned long)arrActivites.count);
-            tempDict = [arrImagesDeatils objectAtIndex:indexPath.row];
+            NSMutableDictionary *tempDict = [objImageDetails.arrImagesDeatils objectAtIndex:indexPath.row];
             
             UILabel *lblImagDesc;
             UIImageView *imgViewFromServer;
             
             CGRect sizeLblContain = [self getImageDescContentHeight:[self makeImgDescriptionWithTile:[tempDict objectForKey:@"title"] stringImgDesc:[tempDict objectForKey:@"description"]]];
             
-            lblImagDesc = [[UILabel alloc]initWithFrame:CGRectMake(0, PADDING_BET_CELL, tableViewImages.frame.size.width,sizeLblContain.size.height)];
+            lblImagDesc = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.tableViewImages.frame.size.width,sizeLblContain.size.height)];
             [lblImagDesc setFont:[UIFont fontWithName:@"AppleSDGothicNeo-Light" size:FONT_SIZE_TEXT_IPHONE]];
-            lblImagDesc.textColor = [UIColor darkGrayColor];
-            lblImagDesc.text = [self makeImgDescriptionWithTile:[tempDict objectForKey:@"title"] stringImgDesc:[tempDict objectForKey:@"description"]];
+            //lblImagDesc.textColor = [UIColor darkGrayColor];
+            //[lblImagDesc setText:[self makeImgDescriptionWithTile:[tempDict objectForKey:@"title"] stringImgDesc:[tempDict objectForKey:@"description"]]];
+            [lblImagDesc setAttributedText:[self makeImgDescriptionWithTile:[tempDict objectForKey:@"title"] stringImgDesc:[tempDict objectForKey:@"description"]]];
             lblImagDesc.numberOfLines = 0;
             [cell addSubview:lblImagDesc];
             
             if(![[tempDict objectForKey:@"imageHref"] isEqual:[NSNull null]])
             {
                 NSArray *arrTemp = [[tempDict objectForKey:@"imgSize"] componentsSeparatedByString:@","];
-                imgViewFromServer = [[UIImageView alloc]initWithFrame:CGRectMake(lblImagDesc.frame.origin.x, lblImagDesc.frame.origin.y+lblImagDesc.frame.size.height, tableViewImages.frame.size.width, [[arrTemp objectAtIndex:1] integerValue])];
+                imgViewFromServer = [[UIImageView alloc]initWithFrame:CGRectMake(lblImagDesc.frame.origin.x, lblImagDesc.frame.origin.y+lblImagDesc.frame.size.height, self.tableViewImages.frame.size.width, [[arrTemp objectAtIndex:1] integerValue])];
                 //imgViewFromServer.contentMode = UIViewContentModeScaleToFill;
                 //imgViewFromServer.contentMode = UIViewContentModeScaleAspectFit;
                 //imgViewFromServer.image = [UIImage imageNamed:@"default-profile-pic.png"];
                 [cell addSubview:imgViewFromServer];
                 [self downloadImage:[tempDict objectForKey:@"imageHref"] imageDownloadFromServer:imgViewFromServer indexPathOfImage:indexPath];
                 
+                [imgViewFromServer.layer setBorderColor: [[UIColor blackColor] CGColor]];
+                [imgViewFromServer.layer setBorderWidth: 1.0];
+                
             }
+            
+            
             
         }
     }
@@ -463,7 +502,7 @@ float screenHeight = 568;
 {
     if (tableView.tag == 1)
     {
-        if(arrImagesDeatils.count > 0)
+        if(objImageDetails.arrImagesDeatils.count > 0)
         {
             
         }
@@ -513,7 +552,7 @@ float screenHeight = 568;
                     // stroe image internal space if you want
                     
                     [WriteImage writeImageToInternalStorage:[UIImage imageWithData:imageData] imageName:[NSString stringWithFormat:@"%d,%d",indexPath.section,indexPath.row]];
-                    //[tableViewImages reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationNone];
+                    //[self.tableViewImages reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationNone];
                     
                 }
             });
@@ -540,7 +579,7 @@ float screenHeight = 568;
              // stroe image internal space if you want
              
              [WriteImage writeImageToInternalStorage:[UIImage imageWithData:imageData] imageName:[NSString stringWithFormat:@"%d,%d",indexPath.section,indexPath.row]];
-             //[tableViewImages reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationNone];
+             //[self.tableViewImages reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationNone];
          }
      }];
     */
@@ -556,27 +595,26 @@ float screenHeight = 568;
     }
     
     NSLog(@"imgCapture %f %f",imgDownload.size.width,imgDownload.size.height);
-    CGSize imgSizeCal = CGSizeMake(tableViewImages.frame.size.width,(imgDownload.size.height*tableViewImages.frame.size.width)/imgDownload.size.width);
+    CGSize imgSizeCal = CGSizeMake(self.tableViewImages.frame.size.width,(imgDownload.size.height*self.tableViewImages.frame.size.width)/imgDownload.size.width);
     NSLog(@"imgSizeCal %f %f",imgSizeCal.width,imgSizeCal.height);
     
-    NSMutableDictionary *dictTemp = [[NSMutableDictionary alloc]init];
-    dictTemp = [arrImagesDeatils objectAtIndex:indexPath.row];
+    NSMutableDictionary *dictTemp = [objImageDetails.arrImagesDeatils objectAtIndex:indexPath.row];
     [dictTemp setObject:[NSString stringWithFormat:@"%f,%f",imgSizeCal.width,imgSizeCal.height] forKey:@"imgSize"];
-    [arrImagesDeatils replaceObjectAtIndex:indexPath.row withObject:dictTemp];
+    [objImageDetails.arrImagesDeatils replaceObjectAtIndex:indexPath.row withObject:dictTemp];
     
     /*
      if(imgDownload.size.width > imgDownload.size.height)
      {
      
      NSLog(@"imgCapture %f %f",imgDownload.size.width,imgDownload.size.height);
-     CGSize imgSizeCal = CGSizeMake(tableViewImages.frame.size.width,(imgDownload.size.height*tableViewImages.frame.size.width)/imgDownload.size.width);
+     CGSize imgSizeCal = CGSizeMake(self.tableViewImages.frame.size.width,(imgDownload.size.height*self.tableViewImages.frame.size.width)/imgDownload.size.width);
      NSLog(@"imgSizeCal %f %f",imgSizeCal.width,imgSizeCal.height);
      return ;
      
      }
      
      NSLog(@"imgCapture %f %f",imgDownload.size.width,imgDownload.size.height);
-     CGSize imgSizeCal = CGSizeMake((imgDownload.size.width*tableViewImages.frame.size.height)/imgDownload.size.height,tableViewImages.frame.size.height);
+     CGSize imgSizeCal = CGSizeMake((imgDownload.size.width*self.tableViewImages.frame.size.height)/imgDownload.size.height,self.tableViewImages.frame.size.height);
      NSLog(@"imgSizeCal %f %f",imgSizeCal.width,imgSizeCal.height);
      */
     
@@ -595,5 +633,9 @@ float screenHeight = 568;
     UIAlertView *alertMsg = [[UIAlertView alloc]initWithTitle:strTitle message:strMsg delegate:self cancelButtonTitle:strBtnCancelTitle otherButtonTitles:nil, nil];
     [alertMsg show];
 }
+
+
+
+
 
 @end
