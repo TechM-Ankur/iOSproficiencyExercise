@@ -184,7 +184,7 @@ float screenHeight = 568;
 
 - (IBAction)btnRefershClick:(id)sender
 {
-    
+    [self startLoader];
     [self getImageDetails];
 }
 

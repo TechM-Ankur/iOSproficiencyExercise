@@ -1,9 +1,9 @@
 //
 //  main.m
-//  TechM-Ankur
+//  TechM-AnkurPatel
 //
-//  Created by Anks Patel on 23/05/16.
-//  Copyright © 2016 Pro Start Me. All rights reserved.
+//  Created by Anks Patel on 30/05/16.
+//  Copyright © 2016 Ankur Patel. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>

@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7D31CF121CF329990084F3B4"
-               BuildableName = "TechM-Ankur.app"
-               BlueprintName = "TechM-Ankur"
-               ReferencedContainer = "container:TechM-Ankur.xcodeproj">
+               BlueprintIdentifier = "7D35B5911CFC002F00D338E9"
+               BuildableName = "TechM-AnkurPatel.app"
+               BlueprintName = "TechM-AnkurPatel"
+               ReferencedContainer = "container:TechM-AnkurPatel.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7D31CF121CF329990084F3B4"
-            BuildableName = "TechM-Ankur.app"
-            BlueprintName = "TechM-Ankur"
-            ReferencedContainer = "container:TechM-Ankur.xcodeproj">
+            BlueprintIdentifier = "7D35B5911CFC002F00D338E9"
+            BuildableName = "TechM-AnkurPatel.app"
+            BlueprintName = "TechM-AnkurPatel"
+            ReferencedContainer = "container:TechM-AnkurPatel.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -55,10 +55,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7D31CF121CF329990084F3B4"
-            BuildableName = "TechM-Ankur.app"
-            BlueprintName = "TechM-Ankur"
-            ReferencedContainer = "container:TechM-Ankur.xcodeproj">
+            BlueprintIdentifier = "7D35B5911CFC002F00D338E9"
+            BuildableName = "TechM-AnkurPatel.app"
+            BlueprintName = "TechM-AnkurPatel"
+            ReferencedContainer = "container:TechM-AnkurPatel.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -74,10 +74,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7D31CF121CF329990084F3B4"
-            BuildableName = "TechM-Ankur.app"
-            BlueprintName = "TechM-Ankur"
-            ReferencedContainer = "container:TechM-Ankur.xcodeproj">
+            BlueprintIdentifier = "7D35B5911CFC002F00D338E9"
+            BuildableName = "TechM-AnkurPatel.app"
+            BlueprintName = "TechM-AnkurPatel"
+            ReferencedContainer = "container:TechM-AnkurPatel.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
